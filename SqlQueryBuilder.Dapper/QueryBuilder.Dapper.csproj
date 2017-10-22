@@ -7,7 +7,7 @@
     <ProjectGuid>{14C8ACE5-E423-493D-A70A-16901685C2B2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SqlQueryBuilder.Dapper</RootNamespace>
+    <RootNamespace>QueryBuilder.Dapper</RootNamespace>
     <AssemblyName>SqlQueryBuilder.Dapper</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -41,9 +41,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SqlQueryBuilder\SqlQueryBuilder.csproj">
+    <ProjectReference Include="..\SqlQueryBuilder\QueryBuilder.csproj">
       <Project>{a70380b6-0231-420a-aa9d-fd927359fb51}</Project>
-      <Name>SqlQueryBuilder</Name>
+      <Name>QueryBuilder</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,4 @@
-﻿namespace SqlQueryBuilder
+﻿namespace QueryBuilder
 {
     public class Page<T>
     {

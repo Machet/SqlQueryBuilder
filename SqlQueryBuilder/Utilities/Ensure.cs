@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SqlQueryBuilder
+namespace QueryBuilder
 {
     internal static class Ensure
     {

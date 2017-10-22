@@ -7,7 +7,7 @@
     <ProjectGuid>{DE63D6B8-BE88-4278-8672-543683DC8569}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SqlQueryBuilder.Test</RootNamespace>
+    <RootNamespace>QueryBuilder.Test</RootNamespace>
     <AssemblyName>SqlQueryBuilder.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -49,9 +49,12 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DbConnectionMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SelectingTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

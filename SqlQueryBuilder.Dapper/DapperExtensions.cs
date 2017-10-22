@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Dapper;
 
-namespace SqlQueryBuilder.Dapper
+namespace QueryBuilder.Dapper
 {
     public static class DapperExtensions
     {

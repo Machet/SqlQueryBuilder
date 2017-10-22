@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 
-namespace SqlQueryBuilder
+namespace QueryBuilder
 {
     public class DataQuery<T>
     {
