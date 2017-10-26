@@ -20,27 +20,33 @@ namespace QueryBuilder
 
         public SqlQueryBuilder(IDbConnection connection)
         {
-            Ensure.NotNull(connection, "connection");
+            Ensure.NotNull(connection, nameof(connection));
             _connection = connection;
             Clear();
         }
 
         public SqlQueryBuilder Select(params string[] columns)
         {
-            Ensure.NotNull(columns, "columns");
+            Ensure.NotNull(columns, nameof(columns));
+            Ensure.AtLeastOneElement(columns, nameof(columns));
+
             _columnsToSelect.AddRange(columns);
             return this;
         }
 
         public SqlQueryBuilder From(string table)
         {
-            Ensure.IsNotEmpty(table, "table");
+            Ensure.IsNotEmpty(table, nameof(table));
+            Ensure.That(_table == null, "From clause already specified");
+
             _table = table;
             return this;
         }
 
-        public SqlQueryBuilder Filter(string column, Guid? value)
+        public SqlQueryBuilder Search<T>(string column, T? value) where T : struct
         {
+            Ensure.NotNull(column, nameof(column));
+
             if (value != null)
             {
                 AddFilter(column, " = ", value.Value);
@@ -49,43 +55,37 @@ namespace QueryBuilder
             return this;
         }
 
-        internal SqlQueryBuilder Filter(string column, bool? value)
+        public SqlQueryBuilder Where<T>(string column, T value) where T : struct
         {
-            if (value != null)
-            {
-                AddFilter(column, " = ", value.Value ? 1 : 0);
-            }
+            Ensure.NotNull(column, nameof(column));
+
+            AddFilter(column, " = ", value);
 
             return this;
         }
 
-        public SqlQueryBuilder Filter(string column, int? value)
+        public SqlQueryBuilder SearchValueOnMultipleColumns<T>(T? value, params string[] columns) where T : struct
         {
-            if (value != null)
-            {
-                AddFilter(column, " = ", value.Value);
-            }
+            Ensure.AtLeastOneElement(columns, nameof(columns));
 
-            return this;
-        }
-
-        public SqlQueryBuilder Filter(string column1, string column2, Guid? value)
-        {
             if (value != null)
             {
                 string paramName = GetNextParameterName();
-                _whereConditions.Add($"({column1} = {paramName} OR {column2} = {paramName})");
+                var strings = columns.Select(c => $"{c} = {paramName}");
+                _whereConditions.Add($"({string.Join(" OR ", strings)})");
                 _parameters.Add(paramName, value);
             }
 
             return this;
         }
 
-        public SqlQueryBuilder Filter(string column, DateTime? start, DateTime? end)
+        public SqlQueryBuilder SearchColumnDoBeWithinDatePeriod(string column, DateTime? start, DateTime? end)
         {
+            Ensure.NotNull(column, nameof(column));
+
             if (start != null)
             {
-                AddFilter(column, " > ", start.Value);
+                AddFilter(column, " >= ", start.Value);
             }
 
             if (end != null)
@@ -96,28 +96,84 @@ namespace QueryBuilder
             return this;
         }
 
-        public SqlQueryBuilder Filter(string column, string value)
+        public SqlQueryBuilder SearchDateToBeWithinColumnPeriod(string startColumn, string endColumn, DateTime? date)
         {
-            if (!string.IsNullOrEmpty(value))
+            Ensure.NotNull(startColumn, nameof(startColumn));
+            Ensure.NotNull(endColumn, nameof(endColumn));
+
+            if (date != null)
             {
                 string paramName = GetNextParameterName();
-                _whereConditions.Add(string.Concat(column, " LIKE '%' + ", paramName, " + '%'"));
-                _parameters.Add(paramName, value);
-                return this;
+                _parameters.Add(paramName, date);
+                _whereConditions.Add(string.Concat(startColumn, " <= ", paramName));
+                _whereConditions.Add(string.Concat(endColumn, " > ", paramName));
             }
 
             return this;
         }
 
-        internal SqlQueryBuilder FilterToNotNull(string column)
+        public SqlQueryBuilder SearchTextToBeLike(string column, string value)
         {
+            Ensure.NotNull(column, nameof(column));
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                string paramName = GetNextParameterName();
+                _whereConditions.Add(string.Concat(column, " LIKE '%' + ", paramName, " + '%'"));
+                _parameters.Add(paramName, value);
+            }
+
+            return this;
+        }
+
+        public SqlQueryBuilder SearchTextToBeEqual(string column, string value)
+        {
+            Ensure.NotNull(column, nameof(column));
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                AddFilter(column, " = ", value);
+            }
+
+            return this;
+        }
+
+        public SqlQueryBuilder WhereIn<T>(string column, IEnumerable<T> values)
+        {
+            Ensure.NotNull(column, nameof(column));
+
+            AddFilter(column, " IN ", values);
+            return this;
+        }
+
+        public SqlQueryBuilder WhereNotIn<T>(string column, IEnumerable<T> values)
+        {
+            Ensure.NotNull(column, nameof(column));
+
+            AddFilter(column, " NOT IN ", values);
+            return this;
+        }
+
+        public SqlQueryBuilder WhereIsNull(string column)
+        {
+            Ensure.NotNull(column, nameof(column));
+
+            _whereConditions.Add(string.Concat(column, " IS NULL"));
+            return this;
+        }
+
+        public SqlQueryBuilder WhereIsNotNull(string column)
+        {
+            Ensure.NotNull(column, nameof(column));
+
             _whereConditions.Add(string.Concat(column, " IS NOT NULL"));
             return this;
         }
 
         public SqlQueryBuilder WithSortableColumns(params string[] columns)
         {
-            Ensure.NotNull(columns, "columns");
+            Ensure.NotNull(columns, nameof(columns));
+
             foreach (var c in columns)
             {
                 _sortableColumns.Add(c);
@@ -128,10 +184,7 @@ namespace QueryBuilder
 
         public SqlQueryBuilder SortBy(string column, bool ascending = true)
         {
-            if (string.IsNullOrEmpty(column))
-            {
-                return this;
-            }
+            Ensure.IsNotEmpty(column, nameof(column));
 
             if (_sortableColumns.Any() && !_sortableColumns.Contains(column))
             {
@@ -144,19 +197,28 @@ namespace QueryBuilder
 
         public SqlQueryBuilder GroupBy(params string[] columns)
         {
-            if (columns == null || !columns.Any())
-            {
-                return this;
-            }
+            Ensure.NotNull(columns, nameof(columns));
+            Ensure.AtLeastOneElement(columns, nameof(columns));
 
             _groupings.AddRange(columns);
             return this;
         }
 
+        public SqlQueryBuilder Apply(Action<SqlQueryBuilder> actionToApply)
+        {
+            actionToApply?.Invoke(this);
+            return this;
+        }
+
+        public SqlQueryBuilder When(bool condition, Action<SqlQueryBuilder> thenAction, Action<SqlQueryBuilder> elseAction)
+        {
+            return condition ? Apply(thenAction) : Apply(elseAction);
+        }
+
         public DataQuery<T> BuildQuery<T>()
         {
             Ensure.AtLeastOneElement(_columnsToSelect, "columns");
-            Ensure.NotNull(_table, "table");
+            Ensure.That(!string.IsNullOrEmpty(_table), "table is not specified");
             string selectQuery = BuildSelectQuery();
 
             var query = new DataQuery<T>(_connection, selectQuery, _parameters);
@@ -178,9 +240,9 @@ namespace QueryBuilder
 
         public PagedQuery<T> BuildPagedQuery<T>(SearchCriteria searchCriteria)
         {
-            Ensure.AtLeastOneElement(_order, "sortings");
             Ensure.AtLeastOneElement(_columnsToSelect, "columns");
-            Ensure.NotNull(_table, "table");
+            Ensure.That(!string.IsNullOrEmpty(_table), "table is not specified");
+            Ensure.AtLeastOneElement(_order, "sortings");
             Ensure.ThatGreaterThan(searchCriteria.PageSize, 0, "pageSize");
             Ensure.IsEmpty(_groupings, "Could not page grouped query");
 

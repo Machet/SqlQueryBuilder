@@ -10,7 +10,7 @@ namespace QueryBuilder
         {
             if (!condition)
             {
-                throw new ArgumentException(message);
+                throw new InvalidOperationException(message);
             }
         }
 
