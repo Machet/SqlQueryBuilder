@@ -69,6 +69,7 @@
     <Compile Include="Query\DataQuery_GroupingTests.cs" />
     <Compile Include="Query\DataQuery_SortingTests.cs" />
     <Compile Include="Query\DataQuery_FilteringTests.cs" />
+    <Compile Include="General\ComplexQueryTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
