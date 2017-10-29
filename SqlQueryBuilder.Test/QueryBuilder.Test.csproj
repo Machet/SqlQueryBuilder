@@ -55,6 +55,7 @@
     <Compile Include="General\FromTests.cs" />
     <Compile Include="General\GroupingTests.cs" />
     <Compile Include="General\SortingTests.cs" />
+    <Compile Include="PagedQuery\PagedQuery_WhereFilterTests.cs" />
     <Compile Include="PagedQuery\PagedQuery_FilteringTests.cs" />
     <Compile Include="PagedQuery\PagedQuery_GroupingTests.cs" />
     <Compile Include="PagedQuery\PagedQuery_FromTests.cs" />

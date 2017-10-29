@@ -55,15 +55,6 @@ namespace QueryBuilder
             return this;
         }
 
-        public SqlQueryBuilder Where<T>(string column, T value) where T : struct
-        {
-            Ensure.NotNull(column, nameof(column));
-
-            AddFilter(column, " = ", value);
-
-            return this;
-        }
-
         public SqlQueryBuilder SearchValueOnMultipleColumns<T>(T? value, params string[] columns) where T : struct
         {
             Ensure.AtLeastOneElement(columns, nameof(columns));
@@ -133,6 +124,42 @@ namespace QueryBuilder
             if (!string.IsNullOrEmpty(value))
             {
                 AddFilter(column, " = ", value);
+            }
+
+            return this;
+        }
+
+        public SqlQueryBuilder Where<T>(string column, T value)
+        {
+            Ensure.NotNull(column, nameof(column));
+
+            AddFilter(column, " = ", value);
+
+            return this;
+        }
+
+        public SqlQueryBuilder Where(string column, Is filterType)
+        {
+            Ensure.NotNull(column, nameof(column));
+            Ensure.NotNull(filterType, nameof(filterType));
+
+            if (filterType.HasValue)
+            {
+                AddFilter(column, " " + filterType.Operator + " ", filterType.Value);
+            }
+            else
+            {
+                _whereConditions.Add(string.Concat(column, " ", filterType.Operator));
+            }
+
+            return this;
+        }
+
+        public SqlQueryBuilder Where(string column, IEnumerable<Is> filterTypes)
+        {
+            foreach (var filterType in filterTypes)
+            {
+                Where(column, filterType);
             }
 
             return this;
