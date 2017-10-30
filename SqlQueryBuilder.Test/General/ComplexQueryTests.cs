@@ -21,7 +21,7 @@ namespace QueryBuilder.Test.General
                 .SortBy("Column2", false)
                 .BuildPagedQuery<Data>(new SearchCriteria { PageSize = 10, PageNumber = 3 });
 
-            query.DataQuery.ShouldBe("SELECT Column1,Column2,Column3 FROM Table WHERE Column1 LIKE '%' + @p1 + '%' AND Column2 = @p2 AND Column3 >= @p3 AND Column3 < @p4 ORDER BY Column1 ASC,Column2 DESC OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY");
+            query.DataQuery.ShouldBe("SELECT Column1,Column2,Column3 FROM Table WHERE Column1 LIKE @p1 AND Column2 = @p2 AND Column3 >= @p3 AND Column3 < @p4 ORDER BY Column1 ASC,Column2 DESC OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY");
         }
 
         [TestMethod]
@@ -37,7 +37,7 @@ namespace QueryBuilder.Test.General
                 .SortBy("Column2", false)
                 .BuildPagedQuery<Data>(new SearchCriteria { PageSize = 10, PageNumber = 3 });
 
-            query.CountQuery.ShouldBe("SELECT COUNT(*) FROM Table WHERE Column1 LIKE '%' + @p1 + '%' AND Column2 = @p2 AND Column3 >= @p3 AND Column3 < @p4");
+            query.CountQuery.ShouldBe("SELECT COUNT(*) FROM Table WHERE Column1 LIKE @p1 AND Column2 = @p2 AND Column3 >= @p3 AND Column3 < @p4");
         }
 
         [TestMethod]

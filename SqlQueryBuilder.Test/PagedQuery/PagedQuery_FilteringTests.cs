@@ -201,8 +201,8 @@ namespace QueryBuilder.Test.PagedQuery
             const string value = "value";
             PagedQuery<Data> query = BuildPagedQuery(b => b.SearchTextToBeLike("Column1", value));
 
-            ShouldContainWhere(query, "WHERE Column1 LIKE '%' + @p1 + '%'");
-            ParameterValueShouldBe(query, "p1", value);
+            ShouldContainWhere(query, "WHERE Column1 LIKE @p1");
+            ParameterValueShouldBe(query, "p1", '%' + value + '%');
         }
 
         [TestMethod]
@@ -306,11 +306,11 @@ namespace QueryBuilder.Test.PagedQuery
                 .SearchColumnDoBeWithinDatePeriod("Column2", startDate, endDate)
                 .SearchTextToBeLike("Column3", stringFilter));
 
-            ShouldContainWhere(query, "WHERE Column1 = @p1 AND Column2 >= @p2 AND Column2 < @p3 AND Column3 LIKE '%' + @p4 + '%'");
+            ShouldContainWhere(query, "WHERE Column1 = @p1 AND Column2 >= @p2 AND Column2 < @p3 AND Column3 LIKE @p4");
             ParameterValueShouldBe(query, "p1", intFilter);
             ParameterValueShouldBe(query, "p2", startDate);
             ParameterValueShouldBe(query, "p3", endDate);
-            ParameterValueShouldBe(query, "p4", stringFilter);
+            ParameterValueShouldBe(query, "p4", '%' + stringFilter + '%');
         }
 
         private PagedQuery<Data> BuildPagedQuery(Action<SqlQueryBuilder> filterAction)

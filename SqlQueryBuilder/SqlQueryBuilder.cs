@@ -46,13 +46,7 @@ namespace QueryBuilder
         public SqlQueryBuilder Search<T>(string column, T? value) where T : struct
         {
             Ensure.NotNull(column, nameof(column));
-
-            if (value != null)
-            {
-                AddFilter(column, " = ", value.Value);
-            }
-
-            return this;
+            return WhenProvided(value, b => b.Where(column, Is.EqualTo(value)));
         }
 
         public SqlQueryBuilder SearchValueOnMultipleColumns<T>(T? value, params string[] columns) where T : struct
@@ -73,17 +67,8 @@ namespace QueryBuilder
         public SqlQueryBuilder SearchColumnDoBeWithinDatePeriod(string column, DateTime? start, DateTime? end)
         {
             Ensure.NotNull(column, nameof(column));
-
-            if (start != null)
-            {
-                AddFilter(column, " >= ", start.Value);
-            }
-
-            if (end != null)
-            {
-                AddFilter(column, " < ", end.Value);
-            }
-
+            WhenProvided(start, b => b.Where(column, Is.GreaterOrEqualThan(start)));
+            WhenProvided(end, b => b.Where(column, Is.LowerThan(end)));
             return this;
         }
 
@@ -106,36 +91,18 @@ namespace QueryBuilder
         public SqlQueryBuilder SearchTextToBeLike(string column, string value)
         {
             Ensure.NotNull(column, nameof(column));
-
-            if (!string.IsNullOrEmpty(value))
-            {
-                string paramName = GetNextParameterName();
-                _whereConditions.Add(string.Concat(column, " LIKE '%' + ", paramName, " + '%'"));
-                _parameters.Add(paramName, value);
-            }
-
-            return this;
+            return When(!string.IsNullOrEmpty(value), b => b.Where(column, Is.Like(value)));
         }
 
         public SqlQueryBuilder SearchTextToBeEqual(string column, string value)
         {
             Ensure.NotNull(column, nameof(column));
-
-            if (!string.IsNullOrEmpty(value))
-            {
-                AddFilter(column, " = ", value);
-            }
-
-            return this;
+            return When(!string.IsNullOrEmpty(value), b => b.Where(column, Is.EqualTo(value)));
         }
 
         public SqlQueryBuilder Where<T>(string column, T value)
         {
-            Ensure.NotNull(column, nameof(column));
-
-            AddFilter(column, " = ", value);
-
-            return this;
+            return Where(column, Is.EqualTo(value));
         }
 
         public SqlQueryBuilder Where(string column, Is filterType)
@@ -167,34 +134,22 @@ namespace QueryBuilder
 
         public SqlQueryBuilder WhereIn<T>(string column, IEnumerable<T> values)
         {
-            Ensure.NotNull(column, nameof(column));
-
-            AddFilter(column, " IN ", values);
-            return this;
+            return Where(column, Is.In(values));
         }
 
         public SqlQueryBuilder WhereNotIn<T>(string column, IEnumerable<T> values)
         {
-            Ensure.NotNull(column, nameof(column));
-
-            AddFilter(column, " NOT IN ", values);
-            return this;
+            return Where(column, Is.NotIn(values));
         }
 
         public SqlQueryBuilder WhereIsNull(string column)
         {
-            Ensure.NotNull(column, nameof(column));
-
-            _whereConditions.Add(string.Concat(column, " IS NULL"));
-            return this;
+            return Where(column, Is.Null());
         }
 
         public SqlQueryBuilder WhereIsNotNull(string column)
         {
-            Ensure.NotNull(column, nameof(column));
-
-            _whereConditions.Add(string.Concat(column, " IS NOT NULL"));
-            return this;
+            return Where(column, Is.NotNull());
         }
 
         public SqlQueryBuilder WithSortableColumns(params string[] columns)
@@ -237,9 +192,14 @@ namespace QueryBuilder
             return this;
         }
 
-        public SqlQueryBuilder When(bool condition, Action<SqlQueryBuilder> thenAction, Action<SqlQueryBuilder> elseAction)
+        public SqlQueryBuilder When(bool condition, Action<SqlQueryBuilder> thenAction, Action<SqlQueryBuilder> elseAction = null)
         {
             return condition ? Apply(thenAction) : Apply(elseAction);
+        }
+
+        public SqlQueryBuilder WhenProvided(object value, Action<SqlQueryBuilder> thenAction, Action<SqlQueryBuilder> elseAction = null)
+        {
+            return value != null ? Apply(thenAction) : Apply(elseAction);
         }
 
         public DataQuery<T> BuildQuery<T>()
